@@ -30,24 +30,25 @@ void add_history(char *history[], int *count, char *line) {
     history[4] = line;
   }
 }
-void free_history(char *history[], int count) {
-  if (history == NULL) {
+void free_history(char *history[], int *count) {
+  if (history == NULL || *count == 0) {
     printf("Can not free an empty history\n");
     return;
   }
 
-  for (int i = 0; i < count; i++) {
+  for (int i = 0; i < *count; i++) {
     free(history[i]);
     history[i] = NULL;
   }
+  *count = 0;
 }
+
 char *get_input(void) {
   while (1) {
     char *line = NULL;
     size_t size = 0;
 
     printf("Enter input: ");
-
     ssize_t chars_read = getline(&line, &size, stdin);
     // If getline() fails
     if (chars_read == -1) {
@@ -79,12 +80,24 @@ int main(void) {
     if (line == NULL) {
       break;
     }
+
+    if (strcmp(line, "clear\n") == 0) {
+      free_history(history, &count);
+
+      if (count != 0) {
+        printf("Failed to clear history\n");
+      } else {
+        printf("History cleared!\n");
+      }
+
+      continue;
+    }
     add_history(history, &count, line);
 
     if (strcmp(line, "print\n") == 0) {
       print_history(history, count);
     }
   }
-  free_history(history, count);
+  free_history(history, &count);
   return 0;
 }
